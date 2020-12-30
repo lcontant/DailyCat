@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,9 +10,9 @@ import (
 	"strings"
 )
 
-const API_ENDPOINT = "https://discord.com/api/v6"
+const API_ENDPOINT = "https://discord.com/api/v8"
 const GRANT_TYPE = "authorization_code"
-const SCOPE = "bot"
+const SCOPE = "bot identify email connections webhook.incoming messages.read"
 
 type DiscordHandler struct {
 	configuration Configuration
@@ -27,10 +28,11 @@ type DiscordCodeExchangeRequestBody struct {
 	Permission   int    `json:"permission"`
 }
 
+
 type DiscordCreateMessageRequestBody struct {
-	Content string `json:"content"`
-	Tts bool `json:"tts"`
-	File []byte `json:"file"`
+	Content string              `json:"content"`
+	Tts     bool                `json:"tts"`
+	Embeds 	[]map[string]map[string]string `json:"embeds"`
 }
 
 type DiscordCodeExchangeResponse struct {
@@ -39,8 +41,6 @@ type DiscordCodeExchangeResponse struct {
 	ExpiresIn   int    `json:"expires_in"`
 	Scope       string `json:"scope"`
 }
-
-
 
 func (DiscordHandler) exchange_code(code string) DiscordCodeExchangeResponse {
 	request_data := url.Values{}
@@ -54,14 +54,11 @@ func (DiscordHandler) exchange_code(code string) DiscordCodeExchangeResponse {
 	resp, _ := http.Post(request_url, "application/x-www-form-urlencoded", strings.NewReader(request_data.Encode()))
 	defer resp.Body.Close()
 	defer resp.Request.Body.Close()
-	var bytes []byte
-	resp.Request.Body.Read(bytes)
 	raw_body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(bytes))
 	fmt.Println(string(raw_body))
 	parsed_response := DiscordCodeExchangeResponse{}
+	json.Unmarshal(raw_body, &parsed_response)
 	if resp.StatusCode == 200 {
-		json.Unmarshal(raw_body, &parsed_response)
 		discordHandler.configuration.values["access_token"] = parsed_response.AccessToken
 		discordHandler.configuration.saveConfig()
 	}
@@ -69,6 +66,29 @@ func (DiscordHandler) exchange_code(code string) DiscordCodeExchangeResponse {
 }
 
 func (DiscordHandler) sendMessage(msg string) {
-
+	client := http.Client{}
+	requestUrl := discordHandler.configuration.values["webhook"]
+	requestBodyData := DiscordCreateMessageRequestBody{
+		Content: "Here is your daily cat",
+		Tts:     false,
+		Embeds: []map[string]map[string]string {
+			{
+				"image" : {
+					"url" : "https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png",
+				},
+			},
+		},
+	}
+	requestBody, _ := json.Marshal(requestBodyData)
+	request, _ := http.NewRequest("POST", requestUrl, bytes.NewBuffer(requestBody))
+	request.Header.Add("Authorization", "Bearer "+discordHandler.configuration.values["access_token"])
+	request.Header.Add("Content-type", "application/json")
+	request.Header.Add("User-Agent", "DiscordBot (louiscontant.com, 1)")
+	resp, _ := client.Do(request)
+	defer resp.Body.Close()
+	defer resp.Request.Body.Close()
+	var bytes []byte
+	resp.Request.Body.Read(bytes)
+	raw_body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(raw_body))
 }
-

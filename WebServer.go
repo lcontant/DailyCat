@@ -11,20 +11,24 @@ import (
 var discordHandler DiscordHandler
 var configuration Configuration
 func handleOauthReturn(w http.ResponseWriter, r *http.Request) {
-	exchangeCodeResponse := discordHandler.exchange_code(r.URL.Query().Get("code"))
-	resp, err := json.Marshal(exchangeCodeResponse)
-	if err != nil {
-		fmt.Println(err)
-	}
-	code, err := w.Write(resp)
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println(code)
+	if r.Method == "GET" {
+		exchangeCodeResponse := discordHandler.exchange_code(r.URL.Query().Get("code"))
+		resp, err := json.Marshal(exchangeCodeResponse)
+		if err != nil {
+			fmt.Println(err)
+		}
+		code, err := w.Write(resp)
+		if err != nil {
+			fmt.Println(err)
+			fmt.Println(code)
+		}
 	}
 }
 
 func sendDiscordMessage(w http.ResponseWriter, r *http.Request) {
-
+	if r.Method == "GET" {
+		discordHandler.sendMessage("b.cat")
+	}
 }
 func main() {
 	env := ""

@@ -1,4 +1,4 @@
-naries for programs and plugins
+# Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
@@ -17,3 +17,4 @@ naries for programs and plugins
 #IDEA
 /.idea
 *.iml
+/testing.http
