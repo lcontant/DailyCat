@@ -26,6 +26,11 @@ func (Configuration) getIntValue(key string) int {
 	return value
 }
 
+func (Configuration) saveConfig() {
+	raw_value, _ := json.Marshal(configuration.values)
+	ioutil.WriteFile(configuration.filename,raw_value, 0644)
+}
+
 
 
 

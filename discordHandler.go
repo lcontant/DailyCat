@@ -17,7 +17,7 @@ type DiscordHandler struct {
 	configuration Configuration
 }
 
-type DiscordCodeExchangeBodyRequest struct {
+type DiscordCodeExchangeRequestBody struct {
 	ClientId     string `json:"client_id"`
 	ClientSecret string `json:"client_secret"`
 	GrantType    string `json:"grant_type"`
@@ -27,11 +27,17 @@ type DiscordCodeExchangeBodyRequest struct {
 	Permission   int    `json:"permission"`
 }
 
+type DiscordCreateMessageRequestBody struct {
+	Content string `json:"content"`
+	Tts bool `json:"tts"`
+	File []byte `json:"file"`
+}
+
 type DiscordCodeExchangeResponse struct {
-	AccessToken string
-	TokenType   string
-	ExpiresIn   int
-	Scope       string
+	AccessToken string `json:"access_token"`
+	TokenType   string `json:"token_type"`
+	ExpiresIn   int    `json:"expires_in"`
+	Scope       string `json:"scope"`
 }
 
 
@@ -54,6 +60,15 @@ func (DiscordHandler) exchange_code(code string) DiscordCodeExchangeResponse {
 	fmt.Println(string(bytes))
 	fmt.Println(string(raw_body))
 	parsed_response := DiscordCodeExchangeResponse{}
-	json.Unmarshal(raw_body, &parsed_response)
+	if resp.StatusCode == 200 {
+		json.Unmarshal(raw_body, &parsed_response)
+		discordHandler.configuration.values["access_token"] = parsed_response.AccessToken
+		discordHandler.configuration.saveConfig()
+	}
 	return parsed_response
 }
+
+func (DiscordHandler) sendMessage(msg string) {
+
+}
+

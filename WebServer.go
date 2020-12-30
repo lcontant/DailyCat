@@ -22,6 +22,10 @@ func handleOauthReturn(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(code)
 	}
 }
+
+func sendDiscordMessage(w http.ResponseWriter, r *http.Request) {
+
+}
 func main() {
 	env := ""
 	if len(os.Args) >= 2 {
@@ -34,6 +38,7 @@ func main() {
 	configuration = newConfiguration(filename)
 	discordHandler = DiscordHandler{configuration: configuration}
 	http.HandleFunc("/discordRedirect", handleOauthReturn)
+	http.HandleFunc("/sendMsg", sendDiscordMessage)
 	http.Handle("/", http.StripPrefix("", http.FileServer(http.Dir(""))))
 	log.Fatal(http.ListenAndServeTLS(":4444", "server.crt", "server.key", nil))
 }
