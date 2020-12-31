@@ -74,7 +74,7 @@ func (DiscordHandler) sendMessage(msg string) {
 		Embeds: []map[string]map[string]string {
 			{
 				"image" : {
-					"url" : "https://icatcare.org/app/uploads/2018/07/Thinking-of-getting-a-cat.png",
+					"url" : getTopImageFromSubreddit("cat"),
 				},
 			},
 		},
